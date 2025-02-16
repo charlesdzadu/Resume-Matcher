@@ -247,21 +247,9 @@ st.title(":blue[Resume Matcher]")
 with st.sidebar:
     st.image("Assets/img/header_image.png")
     st.subheader(
-        "Free and Open Source ATS to help your resume pass the screening stage."
+        "Free and Open Source Algorithm to calculate score for Jobseeker and Offer."
     )
-    st.markdown(
-        "Check the website [www.resumematcher.fyi](https://www.resumematcher.fyi/)"
-    )
-    st.markdown(
-        "Give Resume Matcher a ⭐ on [GitHub](https://github.com/srbhr/resume-matcher)"
-    )
-    badge(type="github", name="srbhr/Resume-Matcher")
-    st.markdown("For updates follow me on Twitter.")
-    badge(type="twitter", name="_srbhr_")
-    st.markdown(
-        "If you like the project and would like to further help in development please consider 👇"
-    )
-    badge(type="buymeacoffee", name="srbhr")
+
 
 st.divider()
 avs.add_vertical_space(1)
@@ -501,10 +489,18 @@ with st.spinner("Please wait..."):
         avs.add_vertical_space(2)
         st.markdown("#### Similarity Score")
         print("Config file parsed successfully:")
+
         resume_string = " ".join(selected_file["extracted_keywords"])
         jd_string = " ".join(selected_jd["extracted_keywords"])
-        result = get_score(resume_string, jd_string)
-        similarity_score = round(result[0].score * 100, 2)
+
+
+        # Temporary keyterme use
+        resume_string = selected_file["keyterms"]
+        jd_string = selected_jd["keyterms"]
+
+        result = get_score_with_openai(resume_string, jd_string)
+
+        similarity_score = round(result[0]['score'] * 100, 2)
 
         # Default color to green
         score_color = "green"

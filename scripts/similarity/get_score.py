@@ -3,10 +3,18 @@ import logging
 import os
 from typing import List
 
+from openai import OpenAI
+
+
+import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
+
 import yaml
 from qdrant_client import QdrantClient
 
 from scripts.utils.logger import init_logging_config
+
+client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
 init_logging_config(basic_log_level=logging.INFO)
 # Get the logger
@@ -14,6 +22,20 @@ logger = logging.getLogger(__name__)
 
 # Set the logging level
 logger.setLevel(logging.INFO)
+
+
+
+
+def get_embedding(text):
+    """
+    Get the embedding for the input text using OpenAI's embedding API.
+    We use "text-embedding-ada-002" which is a state-of-the-art model inspired by GPT-4.
+    """
+    model_name = "text-embedding-3-small"
+    response = client.embeddings.create(input=text,
+    model=model_name)
+    embedding = response.data[0].embedding
+    return embedding
 
 
 def find_path(folder_name):
@@ -136,7 +158,65 @@ def get_score(resume_string, job_description_string):
         collection_name="demo_collection", query_text=job_description_string
     )
     logger.info("Finished getting similarity score")
+
+    logger.info(f"Search result: {search_result}")
     return search_result
+
+
+
+
+
+def get_score_with_openai(resume_string, job_description_string):
+    """
+    The function `get_score_with_openai` calculates the similarity score between a resume and a job
+    description using OpenAI's GPT-3 model.
+
+    Args:
+      resume_string: The `resume_string` parameter is a string containing the text content of a resume.
+    It represents the content of a resume that you want to compare with a job description.
+      job_description_string: The `job_description_string` parameter is a string containing the text
+    content of a job description. This description typically includes details about the job requirements,
+    responsibilities, qualifications, and skills needed for the position.
+
+    Returns:
+      The function `get_score_with_openai` returns the similarity score between the resume and the job
+    description calculated using OpenAI's GPT-3 model.
+    """
+    # Placeholder for OpenAI GPT-3 similarity score calculation
+
+    # Concatenate the keywords into a single string for each set.
+    logger.info("Started getting similarity score")
+
+    job_text = ""
+    for text in resume_string:
+        job_text += text[0] + ", "
+
+    offer_text = ""
+    for text in job_description_string:
+        offer_text += text[0] + ", "
+
+
+    # # Obtain embeddings from the OpenAI API.
+    job_embedding = get_embedding(job_text)
+    offer_embedding = get_embedding(offer_text)
+
+    # # Convert the embeddings to numpy arrays.
+    job_vector = np.array(job_embedding)
+    offer_vector = np.array(offer_embedding)
+
+    # # Compute cosine similarity between the two vectors.
+    similarity = cosine_similarity([job_vector], [offer_vector])[0][0]
+
+    logger.info(f"Similarity score: {similarity}")
+
+
+    result = {}
+    if similarity > 0.59:
+        similarity += 0.2
+
+    result["score"] = similarity
+    return [result]
+
 
 
 if __name__ == "__main__":

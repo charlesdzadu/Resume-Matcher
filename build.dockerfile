@@ -8,4 +8,4 @@ RUN pip install -r requirements.txt
 COPY . .
 EXPOSE 8501
 RUN python run_first.py
-ENTRYPOINT [ "streamlit", "run", "streamlit_app.py"]
+ENTRYPOINT [ "streamlit", "run", "streamlit_interactive.py"]

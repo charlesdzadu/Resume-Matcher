@@ -1,7 +1,17 @@
 import re
 from uuid import uuid4
+import logging
+
 
 import spacy
+from scripts.utils.logger import init_logging_config
+
+init_logging_config(basic_log_level=logging.INFO)
+# Get the logger
+logger = logging.getLogger(__name__)
+
+# Set the logging level
+logger.setLevel(logging.INFO)
 
 # Load the English model
 nlp = spacy.load("en_core_web_md")
@@ -27,6 +37,26 @@ class TextCleaner:
     """
     A class for cleaning a text by removing specific patterns.
     """
+
+    def remove_unwanted_keywords(text):
+        """
+        Clean the input text by removing specific patterns.
+
+        Args:
+            text (str): The input text to clean.
+
+        Returns:
+            str: The cleaned text.
+        """
+
+        doc = nlp(text)
+        logger.info("Text: %s == Entities: %s", text, [(ent.text, ent.label_) for ent in doc.ents])
+
+        for ent in doc.ents:
+            if ent.label_ in {"GPE", "LOC", "DATE", "TIME", "ORDINAL"}:
+                return True
+
+        return False
 
     def remove_emails_links(text):
         """
